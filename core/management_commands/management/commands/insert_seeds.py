@@ -25,8 +25,6 @@ class Command(BaseCommand):
                 ('seed_employees_employee',
                  'seed_employees_employee.xlsx'),
 
-
-
                 #
                 ('seed_auth_group',
                  'seed_auth_group.xlsx'),
@@ -37,7 +35,8 @@ class Command(BaseCommand):
                 ('seed_auth_group_permissions',
                  'seed_auth_group_permissions.xlsx'),
 
-
+                #
+                ('seed_locations_location', 'seed_locations_location.xlsx'),
 
 
                 # Add more commands as needed

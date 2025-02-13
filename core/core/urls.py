@@ -27,6 +27,8 @@ urlpatterns = [
 
     path('employees/', include('employees.urls')),
 
+    path('locations/', include('locations.urls')),
+
     path('profile/', user_views.profile, name='profile'),
     path('profile/password/', user_views.change_password, name='change_password'),
 

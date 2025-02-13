@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'users',
     'employees',
 
+    'locations',
+
     'django_celery_results',
     'dbbackup',
 ]
