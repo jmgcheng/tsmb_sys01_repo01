@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Employee Detail{% endblock %}
+{% block content %}
+
+
+
+  <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Employee</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+
+        <div class="col-xl-6 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Employee Details</h6>
+                </div>
+                <div class="card-body">
+                  <table class="table table-hover table-bordered">
+                    <tr>
+                      <th class="col-3" scope="row">Company ID:</th>
+                      <td>{{object.company_id}}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Email:</th>
+                      <td>{{ object.user.email }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Username:</th>
+                      <td>{{ object.user.username }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Last Name:</th>
+                      <td>{{ object.user.last_name }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">First Name:</th>
+                      <td>{{ object.user.first_name }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Middle Name:</th>
+                      <td>{{ object.middle_name }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Gender:</th>
+                      <td>{{ object.gender }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Contact:</th>
+                      <td>{{ object.contact }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Birth Date:</th>
+                      <td>{{ object.birth_date }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Address:</th>
+                      <td>{{ object.address }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Start Date:</th>
+                      <td>{{ object.start_date }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Status:</th>
+                      <td>{{ object.status }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Position:</th>
+                      <td>{{ object.position }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Position Level:</th>
+                      <td>{{ object.position_level }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Specialties:</th>
+                      <td>
+                        {% for specialty in object.position_specialties.all %}
+                          {{ specialty.name }}
+                          {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </td>
+                    </tr>
+                  </table>
+                
+                  <div class="text-right">
+                    <a class="btn btn-secondary" href="{% url 'employees:employee-update' object.pk %}">Edit Employee</a> 
+                    <a class="btn btn-secondary" href="{% url 'employees:employee-list' %}">Employee List</a>
+                  </div>
+                
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Future Section</h6>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique omnis exercitationem adipisci eos modi, dignissimos aut expedita, mollitia delectus nam ut repellendus a? Modi, laboriosam deleniti placeat iure deserunt molestias.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+  
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Create Employee{% endblock %}
+
+{% block styles_bmain %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+
+
+  <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     <h1 class="h3 mb-0 text-gray-800">Employee</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Employee - 
+              {% if object %}
+                Update
+              {% else %}
+                Add New
+              {% endif %}              
+            </h6>
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              {{ form | crispy }}
+              <div class="text-right">
+                {% if object %}
+                  <button class="btn btn-primary" type="submit">Update Employee</button>
+                {% else %}
+                  <button class="btn btn-primary" type="submit">Add New Employee</button>
+                {% endif %}
+              </div>
+            </form>
+            <hr>
+            <div class="text-right">
+              <a class="btn btn-secondary" href="{% url 'employees:employee-list' %}">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+{% endblock %}
+
+{% block scripts_bmain %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/employee_form.js' %}"></script>
+{% endblock %}

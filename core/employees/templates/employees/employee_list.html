@@ -1,0 +1,321 @@
+{% extends "base.html" %} 
+{% load static %} 
+{% block title %}Employee List{% endblock %} 
+{% block styles_bmain %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.1.8/fc-5.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/datatables.min.css" rel="stylesheet">
+{% endblock %} 
+{% block styles %} 
+{% endblock %} 
+{% block content %}
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Employees</h1>
+  </div>
+
+  <!-- Content Row -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Employee - List</h6>
+        </div>
+
+        <div class="card-body">
+          <div>
+            <form>
+              <div id="accordionDatatableFilter" class="mb-3">
+
+
+                  <div class="row accordion">
+                    <!-- filter position -->
+                    <div class="card col-md">
+                      <div
+                        class="card-header accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseDF1"
+                      >
+                        <h5 class="mb-0">
+                          <button type="button" class="btn">
+                            filter Position:
+                          </button>
+                        </h5>
+                      </div>
+                      <div id="collapseDF1" class="collapse">
+                        <div class="card-body">
+                          <input
+                            type="checkbox"
+                            name="chkPosition"
+                            id="chkPosition-0"
+                            value=""
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label class="btn btn-sm" for="chkPosition-0"
+                            >ALL</label
+                          >
+                          {% for position in positions %}
+                          <input
+                            type="checkbox"
+                            name="chkPosition"
+                            id="chkPosition-{{ forloop.counter }}"
+                            value="{{ position.name }}"
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label
+                            class="btn btn-sm"
+                            for="chkPosition-{{ forloop.counter }}"
+                            >{{ position.name }}</label
+                          >
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- filter specialties -->
+                    <div class="card col-md">
+                      <div
+                        class="card-header accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseDF2"
+                      >
+                        <h5 class="mb-0">
+                          <button type="button" class="btn">
+                            filter Specialty:
+                          </button>
+                        </h5>
+                      </div>
+                      <div id="collapseDF2" class="collapse">
+                        <div class="card-body">
+                          <input
+                            type="checkbox"
+                            name="chkSpecialty"
+                            id="chkSpecialty-0"
+                            value=""
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label class="btn btn-sm" for="chkSpecialty-0"
+                            >ALL</label
+                          >
+                          {% for specialty in specialties %}
+                          <input
+                            type="checkbox"
+                            name="chkSpecialty"
+                            id="chkSpecialty-{{ forloop.counter }}"
+                            value="{{ specialty.name }}"
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label
+                            class="btn btn-sm"
+                            for="chkSpecialty-{{ forloop.counter }}"
+                            >{{ specialty.name }}</label
+                          >
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row accordion">
+                    <!-- filter gender -->
+                    <div class="card col-md">
+                      <div
+                        class="card-header accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseDF3"
+                      >
+                        <h5 class="mb-0">
+                          <button type="button" class="btn">
+                            filter Gender:
+                          </button>
+                        </h5>
+                      </div>
+                      <div id="collapseDF3" class="collapse">
+                        <div class="card-body">
+                          <input
+                            type="checkbox"
+                            name="chkGender"
+                            id="chkGender-0"
+                            value=""
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label class="btn btn-sm" for="chkGender-0"
+                            >ALL</label
+                          >
+                          {% for gender in genders %}
+                          <input
+                            type="checkbox"
+                            name="chkGender"
+                            id="chkGender-{{ forloop.counter }}"
+                            value="{{ gender }}"
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label
+                            class="btn btn-sm"
+                            for="chkGender-{{ forloop.counter }}"
+                            >{{ gender }}</label
+                          >
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- filter status -->
+                    <div class="card col-md">
+                      <div
+                        class="card-header  accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseDF4"
+                      >
+                        <h5 class="mb-0">
+                          <button type="button" class="btn">
+                            filter Employee Status:
+                          </button>
+                        </h5>
+                      </div>
+                      <div id="collapseDF4" class="collapse">
+                        <div class="card-body">
+                          <input
+                            type="checkbox"
+                            name="chkEmployeeStatus"
+                            id="chkEmployeeStatus-0"
+                            value=""
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label class="btn btn-sm" for="chkEmployeeStatus-0">ALL</label>
+                          <input
+                            type="checkbox"
+                            name="chkEmployeeStatus"
+                            id="chkEmployeeStatus-1"
+                            value="ACTIVE"
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label class="btn btn-sm" for="chkEmployeeStatus-1">ACTIVE</label>
+                          {% for status in employee_status %}
+                          <input
+                            type="checkbox"
+                            name="chkEmployeeStatus"
+                            id="chkEmployeeStatus-{{ forloop.counter|add:'1' }}"
+                            value="{{ status.name }}"
+                            class="btn-check"
+                            customType="datatableFilter"
+                          />
+                          <label
+                            class="btn btn-sm"
+                            for="chkEmployeeStatus-{{ forloop.counter|add:'1' }}"
+                            >{{ status.name }}</label>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col">
+                      <div class="form-group">
+                        <br />
+                        <button type="button" class="btn btn-sm btn-secondary" id="resetFilters">
+                          Reset Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+              </div>
+            </form>
+          </div>
+
+          
+          <div class="btn-controls">
+            <h5>Export/Import Controls</h5>
+
+            <div class="row">
+              <div class="col">
+                <script type="text/javascript">
+                  const csrfToken = "{{ csrf_token }}";
+                </script>
+                <button id="export-all-btn" class="btn btn-sm btn-primary">
+                  Export: All Employee Records
+                </button>
+                <button
+                  id="export-filtered-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Export: All Employee Records by Filter
+                </button>
+                <button
+                  id="import-new-employee-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Import Insert: New Employee Records
+                </button>
+                <button
+                  id="import-update-employee-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Import Update: Existing Records
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div id="loader" style="display: none" class="alert alert-info" role="alert">
+                  <i class="fas fa-cog fa-spin"></i>
+                  processing...
+                </div>
+                <div id="message" style="display: none" class="alert alert-info"></div>
+                <a id="download-link" style="display: none"></a>
+              </div>
+            </div>
+
+          </div> 
+         
+
+          <div class="table-responsive">
+            <table id="employeeTable" class="table table-sm table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Company ID</th>
+                  <th>Start Date</th>
+                  <th>Last Name</th>
+                  <th>First Name</th>
+                  <th>Middle Name</th>
+                  <th>Position</th>
+                  <th>Specialties</th>
+                  <th>Level</th>
+                  <th>Gender</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="row">
+              <div class="col"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /.container-fluid -->
+
+{% endblock %} 
+{% block scripts_bmain %}
+<script src="https://cdn.datatables.net/v/bs5/dt-2.1.8/fc-5.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/datatables.min.js"></script>
+{% endblock %} 
+{% block scripts %}
+<script src="{% static 'js/employee_list.js' %}"></script>
+{% endblock %}

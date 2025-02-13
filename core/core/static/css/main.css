@@ -1,0 +1,34 @@
+.dropdown-toggle-no-arrow::after {
+    display: none;
+}
+
+.navbar .img-profile {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+table.dataTable th.dt-type-date, table.dataTable td.dt-type-date {
+    text-align: left;
+}
+
+.btn-controls {
+    padding: 3px;
+    margin: 0 0 25px 0;
+}
+
+#accordionDatatableFilter div[data-bs-toggle="collapse"], #accordionHeadcountTables div[data-bs-toggle="collapse"] {
+    cursor: pointer;
+    padding: 3px;
+}
+
+#accordionDatatableFilter .accordion-button {
+    background: ghostwhite;
+}
+
+#accordionDatatableFilter .accordion-button:not(.collapsed) {
+    background: lavender;
+}
+
+#accordionDatatableFilter .card-body {
+    padding: 7px;
+}
