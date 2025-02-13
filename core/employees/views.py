@@ -410,3 +410,20 @@ def ajx_tasks_status(request, task_id):
         # task.result has value only when function called by .delay raise an error
         'message': str(task.result),
     })
+
+# @login_required
+# def ajx_tasks_status(request, task_id):
+#     try:
+#         task = AsyncResult(task_id)
+
+#         if task.state in ["PENDING", "STARTED", "SUCCESS", "FAILURE", "RETRY"]:
+#             return JsonResponse({
+#                 'status': task.state,
+#                 'task_id': task_id,
+#                 'message': str(task.result) if task.state == "FAILURE" else "",
+#             })
+#         else:
+#             return JsonResponse({'status': 'UNKNOWN', 'task_id': task_id}, status=404)
+
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)

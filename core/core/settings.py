@@ -167,7 +167,12 @@ if DOCKER_ENV:
     CELERY_RESULT_SERIALIZER = 'json'
 else:
     CELERY_BROKER_URL = 'amqp://localhost'
-CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND = 'rpc://'
+
+
+print(f'CELERY_BROKER_URL {CELERY_BROKER_URL}')
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
