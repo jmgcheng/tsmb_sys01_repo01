@@ -37,6 +37,7 @@ class Command(BaseCommand):
 
                 #
                 ('seed_locations_location', 'seed_locations_location.xlsx'),
+                ('seed_companies_company', 'seed_companies_company.xlsx'),
 
 
                 # Add more commands as needed
