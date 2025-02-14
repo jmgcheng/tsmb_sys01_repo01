@@ -12,8 +12,9 @@ from django.db.models import Q, Count, F, Case, When, IntegerField, Value, Prefe
 from django.db.models.functions import Coalesce
 from items.models import ItemUnit, Item, ItemPriceAdjustment
 from companies.models import Company
-from items.forms import ItemForm, ItemPriceAdjustmentForm
-# from inventories.utils import get_quantity_purchasing_subquery, get_quantity_purchasing_receive_subquery, get_quantity_sale_releasing_subquery, get_quantity_sold_subquery, get_quantity_inventory_add_subquery, get_quantity_inventory_deduct_subquery
+from items.forms import ItemForm, ItemPriceAdjustmentForm, ItemExcelUploadForm
+from items.utils import insert_excel_items, update_excel_items, handle_uploaded_file
+from items.tasks import import_items_task
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from celery.result import AsyncResult
 
@@ -178,6 +179,7 @@ def ajx_export_excel_all_items(request):
             'UNIT': item.unit.name,
             'NUM PER UNIT': item.num_per_unit,
             'WEIGHT': item.weight,
+            'ORIGINAL PRICE': item.price,
         })
 
     # Create a Pandas DataFrame
@@ -230,6 +232,7 @@ def ajx_export_excel_filtered_items(request):
             'UNIT': item.unit.name,
             'NUM PER UNIT': item.num_per_unit,
             'WEIGHT': item.weight,
+            'ORIGINAL PRICE': item.price,
         })
 
     # Create a Pandas DataFrame
@@ -241,3 +244,63 @@ def ajx_export_excel_filtered_items(request):
     df.to_excel(os.path.join('media', filename), index=False)
 
     return JsonResponse({'filename': filename, 'status': 'success'})
+
+
+@login_required
+def ajx_import_insert_excel_items_celery(request):
+    #
+    if request.method == 'POST':
+        form = ItemExcelUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            try:
+                # upload the file first in our system so we can have a path
+                file_path = handle_uploaded_file(file)
+
+                # start import of data using celery
+                # this returns a task.id even if import_items_task def has only pass. This means that we don't need to return anything from this def because .delay still returns a task even if there's none. It also doesn't matter if we return True or False to the function that we're calling
+                # return JsonResponse({'status': 'testing', 'message': f"task is {task} and task.id is {task.id}"})
+                task = import_items_task.delay(file_path, mode='INSERT')
+
+                return JsonResponse({'status': 'started', 'task_id': task.id, 'message': f"Import Insert Process TaskID {task.id} started. Please wait..."})
+            except FileNotFoundError:
+                # mostly it goes here if media/uploads directory doesn't exist or handle_uploaded_file not able to upload the file correctly
+                return JsonResponse({'status': 'error', 'message': f"EV31: {str(FileNotFoundError)}. Check file or directory location"})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f"EV30: {type(e)} | {str(e)}"})
+
+    return JsonResponse({'status': 'error', 'message': 'EV03: Invalid request method.'})
+
+
+@login_required
+def ajx_import_update_excel_items_celery(request):
+    #
+    if request.method == 'POST':
+        form = ItemExcelUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            try:
+                file_path = handle_uploaded_file(file)
+                task = import_items_task.delay(file_path, mode='UPDATE')
+
+                return JsonResponse({'status': 'started', 'task_id': task.id, 'message': f"Import Update Process TaskID {task.id} started. Please wait..."})
+            except FileNotFoundError:
+                return JsonResponse({'status': 'error', 'message': f"EV33: {str(FileNotFoundError)}. Check file or directory location"})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f"EV32: {type(e)} | {str(e)}"})
+
+    return JsonResponse({'status': 'error', 'message': 'EV06: Invalid request method.'})
+
+
+@login_required
+def ajx_tasks_status(request, task_id):
+    # task.state might return PENDING, SUCCESS, or FAILURE
+    # FAILURE triggers when function called by .delay raise an error
+    task = AsyncResult(task_id)
+
+    return JsonResponse({
+        'status': task.state,
+        'task_id': task_id,
+        # task.result has value only when function called by .delay raise an error
+        'message': str(task.result),
+    })

@@ -62,3 +62,7 @@ class ItemPriceAdjustmentForm(forms.ModelForm):
             self.add_error("new_price", "New Price cannot be negative.")
 
         return cleaned_data
+
+
+class ItemExcelUploadForm(forms.Form):
+    file = forms.FileField()
