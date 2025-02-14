@@ -74,6 +74,41 @@ class ItemUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
 
+class ItemPriceAdjustmentListView(LoginRequiredMixin, ListView):
+    model = ItemPriceAdjustment
+    template_name = 'items/item_price_adjustment_list.html'
+
+
+class ItemPriceAdjustmentCreateView(LoginRequiredMixin, CreateView):
+    model = ItemPriceAdjustment
+    form_class = ItemPriceAdjustmentForm
+    template_name = 'items/item_price_adjustment_form.html'
+    success_url = reverse_lazy('items:item-price-adjustment-list')
+
+
+class ItemPriceAdjustmentDetailView(LoginRequiredMixin, DetailView):
+    model = ItemPriceAdjustment
+    template_name = 'items/item_price_adjustment_detail.html'
+
+
+class ItemPriceAdjustmentUpdateView(LoginRequiredMixin, UpdateView):
+    model = ItemPriceAdjustment
+    form_class = ItemPriceAdjustmentForm
+    template_name = 'items/item_price_adjustment_form.html'
+    success_url = reverse_lazy('items:item-price-adjustment-list')
+
+    def form_valid(self, form):
+        #
+        messages.success(
+            self.request, 'Item Price Adjustment updated successfully.')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        #
+        messages.warning(self.request, 'Please check errors below')
+        return super().form_invalid(form)
+
+
 @login_required
 def ajx_item_list(request):
 
@@ -147,6 +182,69 @@ def ajx_item_list(request):
             'num_per_unit': i.num_per_unit if i.num_per_unit else 0,
             'weight': i.weight if i.weight else 0.0,
             'convert_kilo': (i.num_per_unit * i.weight) if i.num_per_unit and i.weight else 0.0,
+        })
+
+    response = {
+        'draw': draw,
+        'recordsTotal': total_records,
+        'recordsFiltered': total_records,
+        'data': data
+    }
+
+    return JsonResponse(response)
+
+
+@login_required
+def ajx_item_price_adjustment_list(request):
+
+    draw = int(request.GET.get('draw', 1))
+    start = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 10))
+    search_value = request.GET.get('search[value]', '')
+
+    #
+    price_adjustments = ItemPriceAdjustment.objects.all()
+
+    if search_value:
+        price_adjustments = price_adjustments.filter(
+            Q(item__name__icontains=search_value)
+        ).distinct()
+
+    # Handle ordering
+    order_column_index = int(request.GET.get('order[0][column]', 0))
+    order_direction = request.GET.get('order[0][dir]', 'asc')
+    order_column = request.GET.get(
+        f'columns[{order_column_index}][data]', 'id')
+
+    # print(f'----------------hermit1------------------')
+    # print(order_column)
+    # print(f'----------------hermit1------------------')
+
+    if order_column == 'price':
+        order_column = 'new_price'
+        if order_direction == 'desc':
+            price_adjustments = price_adjustments.order_by(
+                F(order_column).desc(nulls_last=True))
+        else:
+            price_adjustments = price_adjustments.order_by(
+                F(order_column).asc(nulls_last=True))
+    else:
+        if order_direction == 'desc':
+            order_column = f'-{order_column}'
+        price_adjustments = price_adjustments.order_by(order_column)
+
+    paginator = Paginator(price_adjustments, length)
+    total_records = paginator.count
+    price_adjustments_page = paginator.get_page(start // length + 1)
+
+    #
+    data = []
+
+    for pa in price_adjustments_page:
+        data.append({
+            'item': f"<a href='/items/price_adjustments/{pa.id}/'>{pa.item.name}</a>",
+            'date': pa.date,
+            'price': pa.new_price,
         })
 
     response = {

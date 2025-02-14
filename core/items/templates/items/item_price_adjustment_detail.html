@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Item Price Adjustment Detail{% endblock %}
+{% block content %}
+
+
+
+  <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Item Price Adjustment</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+
+        <div class="col-xl-6 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Item Price Adjustment Details</h6>
+                </div>
+                <div class="card-body">
+                  <table class="table table-hover table-bordered">
+                    <tr>
+                      <th class="col-3" scope="row">Item:</th>
+                      <td>{{object.item.name}}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Date:</th>
+                      <td>{{ object.date }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">New Price:</th>
+                      <td>{{ object.new_price }}</td>
+                    </tr>
+                  </table>
+                
+                  <div class="text-right">
+                    <a class="btn btn-secondary" href="{% url 'items:item-price-adjustment-update' object.pk %}">Edit Item Price Adjustment</a> 
+                    <a class="btn btn-secondary" href="{% url 'items:item-price-adjustment-list' %}">Item Price Adjustment List</a>
+                  </div>
+                
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Future Section</h6>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique omnis exercitationem adipisci eos modi, dignissimos aut expedita, mollitia delectus nam ut repellendus a? Modi, laboriosam deleniti placeat iure deserunt molestias.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+  
+{% endblock %}
