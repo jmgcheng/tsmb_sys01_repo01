@@ -54,5 +54,11 @@ class ItemPriceAdjustment(models.Model):
         default=Decimal("0.00")
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['item', 'date'], name='unique_item_date')
+        ]
+
     def __str__(self):
         return f'price {self.price} on {self.date}'
