@@ -1,7 +1,10 @@
+import pandas as pd
+import os
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import permission_required, login_required
@@ -12,6 +15,7 @@ from companies.models import Company
 from items.forms import ItemForm, ItemPriceAdjustmentForm
 # from inventories.utils import get_quantity_purchasing_subquery, get_quantity_purchasing_receive_subquery, get_quantity_sale_releasing_subquery, get_quantity_sold_subquery, get_quantity_inventory_add_subquery, get_quantity_inventory_deduct_subquery
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from celery.result import AsyncResult
 
 
 class ItemListView(LoginRequiredMixin, ListView):
@@ -152,3 +156,88 @@ def ajx_item_list(request):
     }
 
     return JsonResponse(response)
+
+
+@login_required
+def ajx_export_excel_all_items(request):
+
+    #
+    items = Item.objects.all()
+
+    #
+    items = items.select_related(
+        'unit', 'company')
+
+    # Data to be exported
+    data = []
+    for item in items:
+
+        data.append({
+            'NAME': item.name,
+            'COMPANY': item.company.name,
+            'UNIT': item.unit.name,
+            'NUM PER UNIT': item.num_per_unit,
+            'WEIGHT': item.weight,
+        })
+
+    # Create a Pandas DataFrame
+    df = pd.DataFrame(data)
+
+    # Generate the Excel file
+    filename = f"item_records_{
+        timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(os.path.join('media', filename), index=False)
+
+    return JsonResponse({'filename': filename, 'status': 'success'})
+
+
+@login_required
+def ajx_export_excel_filtered_items(request):
+    #
+    search_value = request.GET.get('search[value]', '')
+    #
+    company_filter = request.GET.getlist('company[]', [])
+    unit_filter = request.GET.getlist('unit[]', [])
+
+    # Initial query with select_related for reducing the number of queries
+    items = Item.objects.select_related(
+        'unit', 'company'
+    )
+
+    # Apply search filtering
+    if search_value:
+        items = items.filter(
+
+            Q(name__icontains=search_value)
+
+        ).distinct()
+
+    if company_filter:
+        items = items.filter(
+            company__name__in=company_filter)
+
+    if unit_filter:
+        items = items.filter(
+            unit__name__in=unit_filter)
+
+    # Data to be exported
+    data = []
+    for item in items:
+
+        data.append({
+            'NAME': item.name,
+            'COMPANY': item.company.name,
+            'UNIT': item.unit.name,
+            'NUM PER UNIT': item.num_per_unit,
+            'WEIGHT': item.weight,
+        })
+
+    # Create a Pandas DataFrame
+    df = pd.DataFrame(data)
+
+    # Generate the Excel file
+    filename = f"filtered_item_records_{
+        timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(os.path.join('media', filename), index=False)
+
+    return JsonResponse({'filename': filename, 'status': 'success'})

@@ -28,7 +28,6 @@
             <form>
               <div id="accordionDatatableFilter" class="mb-3">
 
-
                   <div class="row accordion">
                     <!-- filter company -->
                     <div class="card col-md">
@@ -120,7 +119,7 @@
                     </div>
                   </div>
 
-                  
+
 
                   <div class="row">
                     <div class="col">
@@ -136,6 +135,53 @@
               </div>
             </form>
           </div>
+
+          
+          <div class="btn-controls">
+            <h5>Export/Import Controls</h5>
+
+            <div class="row">
+              <div class="col">
+                <script type="text/javascript">
+                  const csrfToken = "{{ csrf_token }}";
+                </script>
+                <button id="export-all-btn" class="btn btn-sm btn-primary">
+                  Export: All Item Records
+                </button>
+                <button
+                  id="export-filtered-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Export: All Item Records by Filter
+                </button>
+                <button
+                  id="import-new-item-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Import Insert: New Item Records
+                </button>
+                <button
+                  id="import-update-item-btn"
+                  class="btn btn-sm btn-primary"
+                >
+                  Import Update: Existing Records
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div id="loader" style="display: none" class="alert alert-info" role="alert">
+                  <i class="fas fa-cog fa-spin"></i>
+                  processing...
+                </div>
+                <div id="message" style="display: none" class="alert alert-info"></div>
+                <a id="download-link" style="display: none"></a>
+              </div>
+            </div>
+
+          </div> 
+         
 
           <div class="table-responsive">
             <table id="dataTable" class="table table-sm table-striped table-hover">

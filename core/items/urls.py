@@ -1,6 +1,6 @@
 from django.urls import path
 
-from items.views import ItemListView, ItemCreateView, ItemDetailView, ItemUpdateView, ajx_item_list
+from items.views import ItemListView, ItemCreateView, ItemDetailView, ItemUpdateView, ajx_item_list, ajx_export_excel_all_items, ajx_export_excel_filtered_items
 
 app_name = 'items'
 
@@ -18,8 +18,10 @@ urlpatterns = [
     #      ProductVariationUpdateView.as_view(), name='product-variation-update'),
 
     path('ajx_item_list/', ajx_item_list, name='ajx_item_list'),
-    # path('variations/ajx_product_variation_list/',
-    #      ajx_product_variation_list, name='ajx_product_variation_list'),
+    path('ajx_export_excel_all_items/', ajx_export_excel_all_items,
+         name='ajx_export_excel_all_items'),
+    path('ajx_export_excel_filtered_items/', ajx_export_excel_filtered_items,
+         name='ajx_export_excel_filtered_items'),
 
     path('', ItemListView.as_view(), name='item-list'),
     # path('variations/', ProductVariationListView.as_view(),
