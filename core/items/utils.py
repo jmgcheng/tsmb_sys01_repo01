@@ -17,10 +17,12 @@ def load_foreign_keys():
     # just creating dictionaries here for easy access of values later
     units = {u.name.upper(): u for u in ItemUnit.objects.all()}
     companies = {c.name.upper(): c for c in Company.objects.all()}
+    items = {i.name.upper(): i for i in Item.objects.all()}
 
     return {
         'units': units,
         'companies': companies,
+        'items': items,
     }
 
 
@@ -71,6 +73,40 @@ def verify_excel_items(df, mode='INSERT'):
         elif column == 'UNIT':
             model = ItemUnit
             model_name = 'ItemUnit'
+
+        should_be('EXISTING', model, model_name, field_name, column_records)
+
+    return df
+
+
+def verify_excel_items_price_adjustments(df, mode='INSERT'):
+    required_columns = ['ITEM', 'DATE', 'NEW PRICE']
+
+    if not all(col in df.columns for col in required_columns):
+        missing_columns = [
+            col for col in required_columns if col not in df.columns]
+        raise CommandError(f"Missing required columns: {
+                           ', '.join(missing_columns)}")
+
+    df['ITEM'] = df['ITEM'].fillna('').astype(str).str.strip().str.upper()
+    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce')
+    df['DATE'] = df['DATE'].map(lambda x: x.strftime('%Y-%m-%d'))
+    df['NEW PRICE'] = df['NEW PRICE'].fillna(0)
+
+    # Validate required columns should have values
+    for col in required_columns:
+        for _, row in df.iterrows():
+            if row[col] == '':
+                raise CommandError(f"Missing values in some {col} rows.")
+
+    # Verify if values exists
+    columns_to_check = ['ITEM']
+    for column in columns_to_check:
+        column_records = df[column].unique()
+        field_name = 'name'
+        if column == 'ITEM':
+            model = Item
+            model_name = 'Item'
 
         should_be('EXISTING', model, model_name, field_name, column_records)
 
@@ -157,6 +193,35 @@ def update_excel_items(df):
     except Exception as e:
         print(f"Error during update: {e}")
         return False
+
+
+def insert_excel_items_price_adjustments(df):
+    # First, verify and clean the input DataFrame
+    df = verify_excel_items_price_adjustments(df, 'INSERT')
+
+    # Load foreign key references
+    foreign_keys = load_foreign_keys()
+
+    # Insert new items
+    price_adjustments = []
+
+    for _, row in df.iterrows():
+
+        # Create item instance
+        item_price_adjustment = ItemPriceAdjustment(
+            item=None if pd.isna(foreign_keys['items'].get(
+                row['ITEM'], None)) else foreign_keys['items'].get(row['ITEM'].upper(), None),
+            date=parse_date(row.get('DATE')),
+            new_price=row['NEW PRICE']
+        )
+
+        price_adjustments.append(item_price_adjustment)
+
+    with transaction.atomic():
+        #
+        ItemPriceAdjustment.objects.bulk_create(price_adjustments)
+
+    return True
 
 
 def handle_uploaded_file(f):

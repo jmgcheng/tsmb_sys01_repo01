@@ -42,6 +42,8 @@ class Command(BaseCommand):
 
                 ('seed_items_itemunit', 'seed_items_itemunit.xlsx'),
                 ('seed_items_item', 'seed_items_item.xlsx'),
+                ('seed_items_itempriceadjustment',
+                 'seed_items_itempriceadjustment.xlsx'),
 
 
                 # Add more commands as needed
