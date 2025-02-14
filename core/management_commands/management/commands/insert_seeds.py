@@ -40,6 +40,9 @@ class Command(BaseCommand):
                 ('seed_companies_company', 'seed_companies_company.xlsx'),
                 ('seed_customers_customer', 'seed_customers_customer.xlsx'),
 
+                ('seed_items_itemunit', 'seed_items_itemunit.xlsx'),
+                ('seed_items_item', 'seed_items_item.xlsx'),
+
 
                 # Add more commands as needed
             ]
