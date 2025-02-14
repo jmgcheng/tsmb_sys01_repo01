@@ -29,6 +29,8 @@ urlpatterns = [
 
     path('locations/', include('locations.urls')),
 
+    path('items/', include('items.urls')),
+
     path('profile/', user_views.profile, name='profile'),
     path('profile/password/', user_views.change_password, name='change_password'),
 
