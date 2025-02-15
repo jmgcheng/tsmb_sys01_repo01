@@ -45,6 +45,9 @@ class Command(BaseCommand):
                 ('seed_items_itempriceadjustment',
                  'seed_items_itempriceadjustment.xlsx'),
 
+                ('seed_transacts_transactstatus',
+                 'seed_transacts_transactstatus.xlsx'),
+
 
                 # Add more commands as needed
             ]
