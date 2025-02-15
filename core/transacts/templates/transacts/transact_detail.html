@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load group_tags %}
+{% block title %}Transact Detail{% endblock %}
+
+{% block styles_bmain %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+
+
+  <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     <h1 class="h3 mb-0 text-gray-800">Transact Detail</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Transact Detail
+            </h6>
+          </div>
+          <div class="card-body">
+            <!-- Header Information -->
+            <h3>Header</h3>
+            <table class="table table-bordered">
+              <tr>
+                <th>SI NO</th>
+                <td>{{ object.si_no }}</td>
+              </tr>
+              <tr>
+                <th>Date</th>
+                <td>{{ object.date }}</td>
+              </tr>
+              <tr>
+                <th>Created By</th>
+                <td>{{ object.creator }}</td>
+              </tr>
+              <tr>
+                <th>Location</th>
+                <td>{{ object.location.name }}</td>
+              </tr>
+              <tr>
+                <th>Company</th>
+                <td>{{ object.company.name }}</td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>{{ object.status.name }}</td>
+              </tr>
+            </table>
+    
+            <!-- Details Information -->
+            <h3>Details</h3>
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for detail in details %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ detail.item }}</td>
+                    <td>{{ detail.quantity }}</td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="3" class="text-center">No details available.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="text-right">
+              <a class="btn btn-primary" href="{% url 'transacts:transact-update' object.id %}">Edit</a>
+              <a class="btn btn-secondary" href="{% url 'transacts:transact-list' %}">Back to List</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+
+
+
+
+
+
+
+
+
+    <!-- attached receipts start -->
+    {% if receipt_headers %}
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Attached Official Receipts
+            </h6>
+          </div>
+          {% for receipt_header in receipt_headers %}
+
+            <div class="card-body">
+              <!-- Header Information -->
+              <h3>Receipt Header</h3>
+              <table class="table table-bordered" style="background-color: #fecfec;">
+                <tr>
+                  <th>Code</th>
+                  <td>{{ receipt_header.code }}</td>
+                </tr>
+                <tr>
+                  <th>Date</th>
+                  <td>{{ receipt_header.date }}</td>
+                </tr>
+                <tr>
+                  <th>Created by</th>
+                  <td>{{ receipt_header.creator }}</td>
+                </tr>
+                <tr>
+                  <th>Status</th>
+                  <td>{{ receipt_header.status.name }}</td>
+                </tr>
+              </table>
+      
+              <!-- Details Information -->
+              <h3>Receipt Details</h3>
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Quantity Paid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for receipt_detail in receipt_header.receipt_details %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>{{ receipt_detail.product_variation.name }}</td>
+                      <td>{{ receipt_detail.quantity_paid }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="3" class="text-center">No details available.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+
+      <div class="row">
+        <div class="col">
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <div class="alert alert-info">
+                No attached receipts yet.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% endif %}
+    <!-- attached receipts end -->    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+
+
+{% endblock %}
+
+{% block scripts_bmain %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'companies',
     'customers',
     'items',
+    'transacts',
 
     'django_celery_results',
     'dbbackup',

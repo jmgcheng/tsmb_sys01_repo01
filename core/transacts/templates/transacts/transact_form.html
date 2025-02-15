@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title %}Create Transact{% endblock %}
+
+{% block styles_bmain %}
+{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+
+
+  <div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+     <h1 class="h3 mb-0 text-gray-800">Transact</h1>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Transact - 
+              {% if object %}
+                Update
+              {% else %}
+                Add New
+              {% endif %}              
+            </h6>
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              <h3>Header</h3>
+              {% csrf_token %}
+              {{ form | crispy }}
+
+
+              <div id="formset">
+                <h3>Details</h3>
+                
+                {{ formset.management_form }} <!-- type hidden -->
+                
+                {% for form in formset %}
+                <div class="formset-row">
+
+                      {{ form.id }}
+                      <div class="row">
+                        <div class="col">
+                          
+                          {{ form.item|as_crispy_field }}
+                        </div>
+                        <div class="col">
+                          
+                          {{ form.quantity|as_crispy_field }}
+                        </div>
+                        <div class="col">
+                          <div class="d-none">  <!-- d-none -->
+                            {{ form.DELETE.label_tag }}
+                            {{ form.DELETE }}
+                          </div>
+                          <div class="form-label">
+                            &#160; <!-- vertical spacer -->
+                          </div>
+                          <button type="button" class="btn btn-warning delete-row">Delete</button>
+                        </div>
+                      </div>
+                  </div>
+                  {% if form.errors %}
+                    <div class="formset-errors">
+                      {% for field, error in form.errors.items %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                                           
+                {% endfor %}
+                {% if formset.non_form_errors %}
+                  <div class="formset-non-form-errors">
+                    {% for error in formset.non_form_errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}                 
+              </div>
+
+              <div>
+                <button class="btn btn-secondary" type="button" id="add-item">Add Item</button>
+              </div>
+              <br><br><br>
+
+              <div class="text-right">
+                {% if object %}
+                  <button class="btn btn-primary" type="submit">Update Transact</button>
+                {% else %}
+                  <button class="btn btn-primary" type="submit">Add New Transact</button>
+                {% endif %}
+              </div>
+            </form>
+            <hr>
+            <div class="text-right">
+              <a class="btn btn-secondary" href="{% url 'transacts:transact-list' %}">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+{% endblock %}
+
+{% block scripts_bmain %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/transact_form.js' %}"></script>
+{% endblock %}

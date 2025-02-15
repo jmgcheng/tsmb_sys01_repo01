@@ -1,0 +1,65 @@
+{% extends "base.html" %} 
+{% load static %} 
+{% block title %}Transact List{% endblock %} 
+{% block styles_bmain %}
+<link href="https://cdn.datatables.net/v/bs5/dt-2.1.8/fc-5.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/datatables.min.css" rel="stylesheet">
+{% endblock %} 
+{% block styles %} 
+{% endblock %} 
+{% block content %}
+
+<!-- Begin Page Content -->
+<div class="container-fluid">
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Transacts</h1>
+  </div>
+
+  <!-- Content Row -->
+  <div class="row">
+    <div class="col">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Transact - List</h6>
+        </div>
+
+        <div class="card-body">
+          
+          <div class="table-responsive">
+            <table id="dataTable" class="table table-sm table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Transact ID</th>
+                  <th>SI NO</th>
+                  <th>Company</th>
+                  <th>Date</th>
+                  <th>Created By</th>
+                  <th>Location</th>
+                  <!-- <th>Customer</th> -->
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="row">
+              <div class="col"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /.container-fluid -->
+
+{% endblock %} 
+{% block scripts_bmain %}
+<script src="https://cdn.datatables.net/v/bs5/dt-2.1.8/fc-5.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/datatables.min.js"></script>
+{% endblock %} 
+{% block scripts %}
+<script src="{% static 'js/transact_list.js' %}"></script>
+{% endblock %}
