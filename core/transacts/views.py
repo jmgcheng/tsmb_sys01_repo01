@@ -1,3 +1,5 @@
+from datetime import datetime
+from decimal import Decimal
 from django.shortcuts import redirect, render
 # from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
@@ -5,7 +7,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, F, Prefetch
+from django.db.models import Q, F, Prefetch, DecimalField, ExpressionWrapper, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce, Concat
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.template.loader import get_template
 from django.urls import reverse_lazy
@@ -115,6 +118,11 @@ class TransactDetailView(LoginRequiredMixin, DetailView):
 class TransactListView(LoginRequiredMixin, ListView):
     model = TransactHeader
     template_name = 'transacts/transact_list.html'
+
+
+class TransactDetailListView(LoginRequiredMixin, ListView):
+    model = TransactHeader
+    template_name = 'transacts/transact_detail_list.html'
 
 
 @login_required
@@ -227,6 +235,106 @@ def ajx_transact_list(request):
             'status': t.status.name if t.status else '',
 
         })
+
+    response = {
+        'draw': draw,
+        'recordsTotal': total_records,
+        'recordsFiltered': total_records,
+        'data': data
+    }
+
+    return JsonResponse(response)
+
+
+@login_required
+def ajx_transact_detail_list(request):
+    draw = int(request.GET.get('draw', 1))
+    start = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 10))
+    search_value = request.GET.get('search[value]', '')
+
+    transacts = TransactDetail.objects.select_related(
+        'transact_header__creator',
+        'transact_header__company',
+        'transact_header__location',
+        'item'
+    ).annotate(
+        transact_id=F('transact_header__id'),
+        si_no=F('transact_header__si_no'),
+        company_name=F('transact_header__company__name'),
+        date=F('transact_header__date'),
+        creator_name=Concat(F('transact_header__creator__user__first_name'), Value(
+            ' '), F('transact_header__creator__user__last_name')),
+        location_name=F('transact_header__location__name'),
+        num_per_unit=Coalesce(F('item__num_per_unit'), 0),
+        weight=Coalesce(F('item__weight'), Decimal('0.0')),
+        convert_to_kilos=ExpressionWrapper(
+            F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        ),
+        delivered_in_kilos=ExpressionWrapper(
+            F('quantity') * F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        )
+    )
+
+    if search_value:
+        transacts = transacts.filter(
+            Q(transact_header__si_no__icontains=search_value) |
+            Q(transact_header__company__name__icontains=search_value) |
+            Q(transact_header__location__name__icontains=search_value) |
+            Q(item__name__icontains=search_value)
+        ).distinct()
+
+    # Sorting Fix
+    order_column_index = int(request.GET.get('order[0][column]', 0))
+    order_direction = request.GET.get('order[0][dir]', 'asc')
+    order_column = request.GET.get(
+        f'columns[{order_column_index}][data]', 'transact_id')
+
+    column_map = {
+        'transact_id': 'transact_id',
+        'si_no': 'si_no',
+        'company': 'company_name',
+        'date': 'date',
+        'creator': 'creator_name',
+        'location': 'location_name',
+        'item': 'item__name',
+        'num_per_unit': 'num_per_unit',
+        'weight': 'weight',
+        'convert_to_kilos': 'convert_to_kilos',
+        'quantity': 'quantity',
+        'delivered_in_kilos': 'delivered_in_kilos',
+    }
+
+    order_column = column_map.get(order_column, 'transact_id')
+
+    if order_direction == 'desc':
+        transacts = transacts.order_by(F(order_column).desc(nulls_last=True))
+    else:
+        transacts = transacts.order_by(F(order_column).asc(nulls_last=True))
+
+    paginator = Paginator(transacts, length)
+    total_records = paginator.count
+    transacts_page = paginator.get_page(start // length + 1)
+
+    data = [
+        {
+            'transact_id': f"<a href='/transacts/{t.transact_id}/'>{t.transact_id}</a>",
+            'si_no': t.si_no,
+            'company': t.company_name,
+            'date': t.date.strftime('%Y-%m-%d'),
+            'creator': t.creator_name,
+            'location': t.location_name,
+            'item': t.item.name,
+            'num_per_unit': t.num_per_unit,
+            'weight': t.weight,
+            'convert_to_kilos': t.convert_to_kilos,
+            'quantity': t.quantity,
+            'delivered_in_kilos': t.delivered_in_kilos,
+        }
+        for t in transacts_page
+    ]
 
     response = {
         'draw': draw,
