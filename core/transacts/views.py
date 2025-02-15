@@ -13,6 +13,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.template.loader import get_template
 from django.urls import reverse_lazy
 from transacts.models import TransactStatus, TransactHeader, TransactDetail
+from items.models import ItemPriceAdjustment
 from transacts.forms import TransactHeaderForm, TransactDetailForm, TransactInlineFormSet, TransactInlineFormSetNoExtra
 from django.views import View
 from xhtml2pdf import pisa
@@ -253,6 +254,12 @@ def ajx_transact_detail_list(request):
     length = int(request.GET.get('length', 10))
     search_value = request.GET.get('search[value]', '')
 
+    # Subquery to get the most recent price adjustment before or on the transaction date
+    latest_price_adjustment = ItemPriceAdjustment.objects.filter(
+        item=OuterRef('item'),
+        date__lte=OuterRef('transact_header__date')
+    ).order_by('-date').values('new_price')[:1]
+
     transacts = TransactDetail.objects.select_related(
         'transact_header__creator',
         'transact_header__company',
@@ -275,7 +282,9 @@ def ajx_transact_detail_list(request):
         delivered_in_kilos=ExpressionWrapper(
             F('quantity') * F('item__num_per_unit') * F('item__weight'),
             output_field=DecimalField()
-        )
+        ),
+        price_posted=Coalesce(Subquery(
+            latest_price_adjustment, output_field=DecimalField()), F('item__price'))
     )
 
     if search_value:
@@ -305,6 +314,7 @@ def ajx_transact_detail_list(request):
         'convert_to_kilos': 'convert_to_kilos',
         'quantity': 'quantity',
         'delivered_in_kilos': 'delivered_in_kilos',
+        'price_posted': 'price_posted',
     }
 
     order_column = column_map.get(order_column, 'transact_id')
@@ -332,6 +342,7 @@ def ajx_transact_detail_list(request):
             'convert_to_kilos': t.convert_to_kilos,
             'quantity': t.quantity,
             'delivered_in_kilos': t.delivered_in_kilos,
+            'price_posted': float(t.price_posted),
         }
         for t in transacts_page
     ]

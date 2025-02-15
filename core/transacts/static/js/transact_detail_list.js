@@ -23,6 +23,7 @@ $(document).ready(function() {
             { data: 'convert_to_kilos' },
             { data: 'quantity' },
             { data: 'delivered_in_kilos' },
+            { data: 'price_posted' },
         ],
         layout: {
             // topStart: 'pageLength',
