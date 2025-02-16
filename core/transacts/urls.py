@@ -1,5 +1,5 @@
 from django.urls import path
-from transacts.views import TransactCreateView, TransactUpdateView, TransactListView, TransactDetailView, TransactDetailListView, ajx_transact_list, ajx_transact_detail_list
+from transacts.views import TransactCreateView, TransactUpdateView, TransactListView, TransactDetailView, TransactDetailListView, ajx_transact_list, ajx_transact_detail_list, ajx_export_transact_detail_list, ajx_export_filtered_transact_detail_list
 
 app_name = 'transacts'
 
@@ -11,6 +11,10 @@ urlpatterns = [
     path('ajx_transact_list/', ajx_transact_list, name='ajx_transact_list'),
     path('details/ajx_transact_detail_list/', ajx_transact_detail_list,
          name='ajx_transact_detail_list'),
+    path('details/ajx_export_transact_detail_list/', ajx_export_transact_detail_list,
+         name='ajx_export_transact_detail_list'),
+    path('details/ajx_export_filtered_transact_detail_list/', ajx_export_filtered_transact_detail_list,
+         name='ajx_export_filtered_transact_detail_list'),
     path('details/', TransactDetailListView.as_view(),
          name='transact-detail-list'),
     path('', TransactListView.as_view(), name='transact-list'),

@@ -94,4 +94,67 @@ $(document).ready(function() {
         table.draw();
     });
 
+    $('#export-all-btn').click(function () {
+        handleExport("/transacts/details/ajx_export_transact_detail_list/");
+    });
+
+    $('#export-filtered-btn').click(function () {
+        var searchParams = table.ajax.params();
+        var queryString = $.param(searchParams);
+
+        handleExport("/transacts/details/ajx_export_filtered_transact_detail_list?" + queryString);
+    });
+
+    function handleExport(url) {
+        $.ajax({
+            url: url,
+            method: 'GET',
+            beforeSend: function(xhr) {
+                disableControls();
+                $('#loader').show();
+                $('#message').hide();
+                $("#message").removeClass();
+            },
+            success: function (data) {
+                $('#loader').hide();
+                if (data.status === 'success') {
+                    let downloadLink = document.getElementById('download-link');
+                    downloadLink.href = '/media/' + data.filename; 
+                    downloadLink.download = data.filename; 
+                    downloadLink.click();
+                    $("#message").addClass("alert alert-success");
+                    $('#message').text('File generated and downloaded successfully.');
+                    $('#message').show().delay(5000).slideUp(500);
+                } else {
+                    $("#message").addClass("alert alert-warning");
+                    $('#message').text('An error occurred while generating the file.');
+                    $('#message').show();
+                }
+            },
+            error: function () {
+                $('#loader').hide();
+                $("#message").addClass("alert alert-warning");
+                $('#message').text('An error occurred while generating the file.');
+                $('#message').show();
+            },
+            complete: function() {
+                enableControls();
+            }
+        });
+    }
+
+    function disableControls() {
+        $('#export-all-btn').prop('disabled', true);
+        $('#export-filtered-btn').prop('disabled', true);
+        // $('#import-new-employee-btn').prop('disabled', true);
+        // $('#import-update-employee-btn').prop('disabled', true);
+    }
+
+    function enableControls() {
+        $('#export-all-btn').prop('disabled', false);
+        $('#export-filtered-btn').prop('disabled', false);
+        // $('#import-new-employee-btn').prop('disabled', false);
+        // $('#import-update-employee-btn').prop('disabled', false);
+    }
+
 });

@@ -1,3 +1,5 @@
+import pandas as pd
+import os
 from datetime import datetime
 from decimal import Decimal
 from django.shortcuts import redirect, render
@@ -12,6 +14,7 @@ from django.db.models.functions import Coalesce, Concat
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.template.loader import get_template
 from django.urls import reverse_lazy
+from django.utils import timezone
 from transacts.models import TransactStatus, TransactHeader, TransactDetail
 from items.models import ItemPriceAdjustment
 from transacts.forms import TransactHeaderForm, TransactDetailForm, TransactInlineFormSet, TransactInlineFormSetNoExtra
@@ -364,3 +367,212 @@ def ajx_transact_detail_list(request):
     }
 
     return JsonResponse(response)
+
+
+@login_required
+def ajx_export_transact_detail_list(request):
+
+    # Subquery to get the most recent price adjustment before or on the transaction date
+    latest_price_adjustment = ItemPriceAdjustment.objects.filter(
+        item=OuterRef('item'),
+        date__lte=OuterRef('transact_header__date')
+    ).order_by('-date').values('new_price')[:1]
+
+    transacts = TransactDetail.objects.select_related(
+        'transact_header__creator',
+        'transact_header__company',
+        'transact_header__location',
+        'item'
+    ).annotate(
+        transact_id=F('transact_header__id'),
+        si_no=F('transact_header__si_no'),
+        company_name=F('transact_header__company__name'),
+        date=F('transact_header__date'),
+        creator_name=Concat(F('transact_header__creator__user__first_name'), Value(
+            ' '), F('transact_header__creator__user__last_name')),
+        location_name=F('transact_header__location__name'),
+        num_per_unit=Coalesce(F('item__num_per_unit'), 0),
+        weight=Coalesce(F('item__weight'), Decimal('0.0')),
+        convert_to_kilos=ExpressionWrapper(
+            F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        ),
+        delivered_in_kilos=ExpressionWrapper(
+            F('quantity') * F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        ),
+        price_posted=Coalesce(Subquery(
+            latest_price_adjustment, output_field=DecimalField()), F('item__price'))
+    )
+
+    # Sorting Fix
+    order_column_index = int(request.GET.get('order[0][column]', 0))
+    order_direction = request.GET.get('order[0][dir]', 'asc')
+    order_column = request.GET.get(
+        f'columns[{order_column_index}][data]', 'transact_id')
+
+    column_map = {
+        'transact_id': 'transact_id',
+        'si_no': 'si_no',
+        'company': 'company_name',
+        'date': 'date',
+        'creator': 'creator_name',
+        'location': 'location_name',
+        'item': 'item__name',
+        'num_per_unit': 'num_per_unit',
+        'weight': 'weight',
+        'convert_to_kilos': 'convert_to_kilos',
+        'quantity': 'quantity',
+        'delivered_in_kilos': 'delivered_in_kilos',
+        'price_posted': 'price_posted',
+    }
+
+    order_column = column_map.get(order_column, 'transact_id')
+
+    if order_direction == 'desc':
+        transacts = transacts.order_by(F(order_column).desc(nulls_last=True))
+    else:
+        transacts = transacts.order_by(F(order_column).asc(nulls_last=True))
+
+    data = [
+        {
+            'DATE': t.date.strftime('%Y-%m-%d'),
+            'COMPANY': t.company_name,
+            'SI NO': t.si_no,
+            'LOCATION': t.location_name,
+            'CREATED BY': t.creator_name,
+            'ITEM': t.item.name,
+            'UNIT': t.item.unit.name,
+            'PACKS PER UNIT': t.num_per_unit,
+            'WEIGHT': t.weight,
+            'CONVERT TO KILOS': t.convert_to_kilos,
+            'QUANTITY': t.quantity,
+            'DELIVERED IN KILOS': t.delivered_in_kilos,
+            'PRICE POSTED': float(t.price_posted),
+        }
+        for t in transacts
+    ]
+
+    # Create a Pandas DataFrame
+    df = pd.DataFrame(data)
+
+    # Generate the Excel file
+    filename = f"transact_detail_records_{
+        timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(os.path.join('media', filename), index=False)
+
+    return JsonResponse({'filename': filename, 'status': 'success'})
+
+
+@login_required
+def ajx_export_filtered_transact_detail_list(request):
+
+    search_value = request.GET.get('search[value]', '')
+
+    # Subquery to get the most recent price adjustment before or on the transaction date
+    latest_price_adjustment = ItemPriceAdjustment.objects.filter(
+        item=OuterRef('item'),
+        date__lte=OuterRef('transact_header__date')
+    ).order_by('-date').values('new_price')[:1]
+
+    transacts = TransactDetail.objects.select_related(
+        'transact_header__creator',
+        'transact_header__company',
+        'transact_header__location',
+        'item'
+    ).annotate(
+        transact_id=F('transact_header__id'),
+        si_no=F('transact_header__si_no'),
+        company_name=F('transact_header__company__name'),
+        date=F('transact_header__date'),
+        creator_name=Concat(F('transact_header__creator__user__first_name'), Value(
+            ' '), F('transact_header__creator__user__last_name')),
+        location_name=F('transact_header__location__name'),
+        num_per_unit=Coalesce(F('item__num_per_unit'), 0),
+        weight=Coalesce(F('item__weight'), Decimal('0.0')),
+        convert_to_kilos=ExpressionWrapper(
+            F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        ),
+        delivered_in_kilos=ExpressionWrapper(
+            F('quantity') * F('item__num_per_unit') * F('item__weight'),
+            output_field=DecimalField()
+        ),
+        price_posted=Coalesce(Subquery(
+            latest_price_adjustment, output_field=DecimalField()), F('item__price'))
+    )
+
+    if search_value:
+        transacts = transacts.filter(
+            Q(transact_header__si_no__icontains=search_value) |
+            Q(transact_header__company__name__icontains=search_value) |
+            Q(transact_header__location__name__icontains=search_value) |
+            Q(item__name__icontains=search_value)
+        ).distinct()
+
+    # date range filter
+    if request.GET.get('minDate'):
+        min_date = request.GET['minDate']
+        transacts = transacts.filter(date__gte=min_date)
+
+    if request.GET.get('maxDate'):
+        max_date = request.GET['maxDate']
+        transacts = transacts.filter(date__lte=max_date)
+
+    # Sorting Fix
+    order_column_index = int(request.GET.get('order[0][column]', 0))
+    order_direction = request.GET.get('order[0][dir]', 'asc')
+    order_column = request.GET.get(
+        f'columns[{order_column_index}][data]', 'transact_id')
+
+    column_map = {
+        'transact_id': 'transact_id',
+        'si_no': 'si_no',
+        'company': 'company_name',
+        'date': 'date',
+        'creator': 'creator_name',
+        'location': 'location_name',
+        'item': 'item__name',
+        'num_per_unit': 'num_per_unit',
+        'weight': 'weight',
+        'convert_to_kilos': 'convert_to_kilos',
+        'quantity': 'quantity',
+        'delivered_in_kilos': 'delivered_in_kilos',
+        'price_posted': 'price_posted',
+    }
+
+    order_column = column_map.get(order_column, 'transact_id')
+
+    if order_direction == 'desc':
+        transacts = transacts.order_by(F(order_column).desc(nulls_last=True))
+    else:
+        transacts = transacts.order_by(F(order_column).asc(nulls_last=True))
+
+    data = [
+        {
+            'DATE': t.date.strftime('%Y-%m-%d'),
+            'COMPANY': t.company_name,
+            'SI NO': t.si_no,
+            'LOCATION': t.location_name,
+            'CREATED BY': t.creator_name,
+            'ITEM': t.item.name,
+            'UNIT': t.item.unit.name,
+            'PACKS PER UNIT': t.num_per_unit,
+            'WEIGHT': t.weight,
+            'CONVERT TO KILOS': t.convert_to_kilos,
+            'QUANTITY': t.quantity,
+            'DELIVERED IN KILOS': t.delivered_in_kilos,
+            'PRICE POSTED': float(t.price_posted),
+        }
+        for t in transacts
+    ]
+
+    # Create a Pandas DataFrame
+    df = pd.DataFrame(data)
+
+    # Generate the Excel file
+    filename = f"filtered_transact_detail_records_{
+        timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(os.path.join('media', filename), index=False)
+
+    return JsonResponse({'filename': filename, 'status': 'success'})
