@@ -295,6 +295,15 @@ def ajx_transact_detail_list(request):
             Q(item__name__icontains=search_value)
         ).distinct()
 
+    # date range filter
+    if request.GET.get('minDate'):
+        min_date = request.GET['minDate']
+        transacts = transacts.filter(date__gte=min_date)
+
+    if request.GET.get('maxDate'):
+        max_date = request.GET['maxDate']
+        transacts = transacts.filter(date__lte=max_date)
+
     # Sorting Fix
     order_column_index = int(request.GET.get('order[0][column]', 0))
     order_direction = request.GET.get('order[0][dir]', 'asc')
