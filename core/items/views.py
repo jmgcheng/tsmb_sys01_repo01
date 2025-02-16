@@ -47,12 +47,19 @@ class ItemDetailView(LoginRequiredMixin, DetailView):
         item = get_object_or_404(
             Item, pk=self.kwargs['pk'])
 
+        #
+        price_adjustments = None
+        if item:
+            price_adjustments = ItemPriceAdjustment.objects.filter(
+                item=item).order_by('-date')
+
         conv_to_kg = '-'
         if item.num_per_unit and item.weight:
             conv_to_kg = item.num_per_unit * item.weight
 
         # Add the annotated object to the context
         context['conv_to_kg'] = conv_to_kg
+        context['price_adjustments'] = price_adjustments
         return context
 
 

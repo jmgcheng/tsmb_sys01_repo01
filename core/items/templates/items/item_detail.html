@@ -64,12 +64,20 @@
         <div class="col-xl-6 col-lg-5">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">Future Section</h6>
+                    <h6 class="m-0 font-weight-bold text-info">Item Price Adjustments History</h6>
                 </div>
                 <div class="card-body">
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique omnis exercitationem adipisci eos modi, dignissimos aut expedita, mollitia delectus nam ut repellendus a? Modi, laboriosam deleniti placeat iure deserunt molestias.
-                    </p>
+                  {% if price_adjustments %}
+                    <ul>
+                      {% for price_adjustment in price_adjustments %}
+                        <li>On {{price_adjustment.date}}, change price to {{price_adjustment.new_price}}</li>
+                      {% endfor %}
+                    </ul>
+
+                  {% else %}
+                    <p>No history for this item</p>
+                  {% endif %}
+                  
                 </div>
             </div>
         </div>
