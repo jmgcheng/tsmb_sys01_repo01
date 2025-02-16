@@ -65,7 +65,12 @@
                 <tr>
                   <th>#</th>
                   <th>Item</th>
+                  <th>PACKS/Unit</th>
+                  <th>Weight</th>
+                  <th>Convert to Kilos</th>
                   <th>Quantity</th>
+                  <th>Delivered in Kilos</th>
+                  <th>Price Posted</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,7 +78,12 @@
                   <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ detail.item }}</td>
+                    <td>{{ detail.num_per_unit }}</td>
+                    <td>{{ detail.weight }}</td>
+                    <td>{{ detail.convert_to_kilos }}</td>
                     <td>{{ detail.quantity }}</td>
+                    <td>{{ detail.delivered_in_kilos }}</td>
+                    <td>{{ detail.price_posted }}</td>
                   </tr>
                 {% empty %}
                   <tr>

@@ -111,9 +111,31 @@ class TransactDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Fetch TransactDetails for the current header
-        context['details'] = TransactDetail.objects.filter(
-            transact_header=self.object)
+        # Subquery to get the latest price adjustment before or on the transaction date
+        latest_price_adjustment = ItemPriceAdjustment.objects.filter(
+            item=OuterRef('item'),
+            date__lte=self.object.date  # Ensure we filter based on the transaction date
+        ).order_by('-date').values('new_price')[:1]
+
+        # Fetch TransactDetails with annotations
+        context['details'] = TransactDetail.objects.select_related('item').filter(
+            transact_header=self.object
+        ).annotate(
+            num_per_unit=Coalesce(F('item__num_per_unit'), 0),
+            weight=Coalesce(F('item__weight'), Decimal('0.0')),
+            convert_to_kilos=ExpressionWrapper(
+                F('item__num_per_unit') * F('item__weight'),
+                output_field=DecimalField()
+            ),
+            delivered_in_kilos=ExpressionWrapper(
+                F('quantity') * F('item__num_per_unit') * F('item__weight'),
+                output_field=DecimalField()
+            ),
+            price_posted=Coalesce(
+                Subquery(latest_price_adjustment, output_field=DecimalField()),
+                F('item__price')
+            )
+        )
 
         return context
 
