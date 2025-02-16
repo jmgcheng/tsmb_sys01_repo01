@@ -61,4 +61,4 @@ class ItemPriceAdjustment(models.Model):
         ]
 
     def __str__(self):
-        return f'price {self.price} on {self.date}'
+        return f'price {self.new_price} on {self.date}'
