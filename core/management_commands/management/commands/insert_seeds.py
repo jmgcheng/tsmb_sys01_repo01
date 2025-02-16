@@ -48,6 +48,8 @@ class Command(BaseCommand):
                 ('seed_transacts_transactstatus',
                  'seed_transacts_transactstatus.xlsx'),
 
+                ('seed_transacts', 'seed_transacts.xlsx'),
+
 
                 # Add more commands as needed
             ]
