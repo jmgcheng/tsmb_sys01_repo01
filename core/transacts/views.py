@@ -219,8 +219,11 @@ def ajx_transact_list(request):
     data = []
 
     for t in transacts_page:
-        fullname_creator = f'{t.creator.user.first_name} {t.creator.user.last_name}'
-        fullname_creator = f'{fullname_creator} {t.creator.user.employee.middle_name}' if t.creator.user.employee.middle_name else fullname_creator
+        fullname_creator = ''
+        if t.creator:
+            fullname_creator = f'{t.creator.user.first_name} {t.creator.user.last_name}'
+            fullname_creator = f'{fullname_creator} {t.creator.user.employee.middle_name}' if t.creator.user.employee.middle_name else fullname_creator
+
         fullname_customer = ''
         if t.customer:
             fullname_customer = f'{t.customer.first_name} {t.customer.last_name}'
