@@ -22,8 +22,8 @@ class TransactStatus(models.Model):
 class TransactHeader(models.Model):
     si_no = models.CharField(max_length=100)
     date = models.DateField(default=datetime.now)
-    creator = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="transact_creator")
+    creator = models.ForeignKey(Employee, on_delete=models.CASCADE,
+                                blank=True, null=True, related_name="transact_creator")
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     customer = models.ForeignKey(
         Customer, on_delete=models.CASCADE, blank=True, null=True)
@@ -37,7 +37,7 @@ class TransactHeader(models.Model):
         ]
 
     def __str__(self):
-        return f"TransactHeader #{self.code}"
+        return f"TransactHeader #{self.id} - Company: {self.company.name} - SI No: {self.si_no} - Date: {self.date} - Status: {self.status}"
 
 
 class TransactDetail(models.Model):
