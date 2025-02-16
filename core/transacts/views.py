@@ -41,8 +41,7 @@ class TransactCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         context = self.get_context_data()
         form.instance.creator = self.request.user.employee
-        form.instance.status = TransactStatus.objects.get(
-            name='FILED')
+        # form.instance.status = TransactStatus.objects.get(name='FILED')
 
         formset = context['formset']
 

@@ -9,7 +9,19 @@ class TransactHeaderForm(forms.ModelForm):
 
     class Meta:
         model = TransactHeader
-        fields = ['si_no', 'date', 'location',  'company']
+        fields = ['si_no', 'date', 'location',  'company', 'status']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Set the default value for status to "FILED" if not already set
+        # This checks if it's a new form (not editing an existing record)
+        if not self.instance.pk:
+            try:
+                filed_status = TransactStatus.objects.get(name="FILED")
+                self.fields['status'].initial = filed_status
+            except TransactStatus.DoesNotExist:
+                pass  # If "FILED" status does not exist, just leave it empty
 
     def clean(self):
         cleaned_data = super().clean()
