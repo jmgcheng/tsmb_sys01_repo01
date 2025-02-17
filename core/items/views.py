@@ -178,10 +178,25 @@ def ajx_item_list(request):
     total_records = paginator.count
     items_page = paginator.get_page(start // length + 1)
 
+    # Fetch price adjustment history for each item
+    item_ids = {i.id for i in items_page}
+    price_histories = {item_id: [] for item_id in item_ids}
+
+    adjustments = ItemPriceAdjustment.objects.filter(
+        item_id__in=item_ids).order_by('date')
+    for adj in adjustments:
+        price_histories[adj.item_id].append((adj.date, adj.new_price))
+
     #
     data = []
 
     for i in items_page:
+        # Build remarks column
+        remarks = f"Original Price {i.price}."
+        if price_histories[i.id]:
+            for date, new_price in price_histories[i.id]:
+                remarks += f" Updated on {date.strftime('%b %d %Y')} to {new_price}."
+
         data.append({
             'name': f"<a href='/items/{i.id}/'>{i.name}</a>",
             'company': i.company.name if i.company else '',
@@ -189,6 +204,7 @@ def ajx_item_list(request):
             'num_per_unit': i.num_per_unit if i.num_per_unit else 0,
             'weight': i.weight if i.weight else 0.0,
             'convert_kilo': (i.num_per_unit * i.weight) if i.num_per_unit and i.weight else 0.0,
+            'remarks': remarks
         })
 
     response = {
@@ -274,9 +290,23 @@ def ajx_export_excel_all_items(request):
     items = items.select_related(
         'unit', 'company')
 
+    # Fetch price adjustment history for each item
+    item_ids = {i.id for i in items}
+    price_histories = {item_id: [] for item_id in item_ids}
+
+    adjustments = ItemPriceAdjustment.objects.filter(
+        item_id__in=item_ids).order_by('date')
+    for adj in adjustments:
+        price_histories[adj.item_id].append((adj.date, adj.new_price))
+
     # Data to be exported
     data = []
     for item in items:
+        # Build remarks column
+        remarks = f"Original Price {item.price}."
+        if price_histories[item.id]:
+            for date, new_price in price_histories[item.id]:
+                remarks += f" Updated on {date.strftime('%b %d %Y')} to {new_price}."
 
         data.append({
             'NAME': item.name,
@@ -285,6 +315,7 @@ def ajx_export_excel_all_items(request):
             'NUM PER UNIT': item.num_per_unit,
             'WEIGHT': item.weight,
             'ORIGINAL PRICE': item.price,
+            'Remarks': remarks
         })
 
     # Create a Pandas DataFrame
@@ -327,9 +358,23 @@ def ajx_export_excel_filtered_items(request):
         items = items.filter(
             unit__name__in=unit_filter)
 
+    # Fetch price adjustment history for each item
+    item_ids = {i.id for i in items}
+    price_histories = {item_id: [] for item_id in item_ids}
+
+    adjustments = ItemPriceAdjustment.objects.filter(
+        item_id__in=item_ids).order_by('date')
+    for adj in adjustments:
+        price_histories[adj.item_id].append((adj.date, adj.new_price))
+
     # Data to be exported
     data = []
     for item in items:
+        # Build remarks column
+        remarks = f"Original Price {item.price}."
+        if price_histories[item.id]:
+            for date, new_price in price_histories[item.id]:
+                remarks += f" Updated on {date.strftime('%b %d %Y')} to {new_price}."
 
         data.append({
             'NAME': item.name,
@@ -338,6 +383,7 @@ def ajx_export_excel_filtered_items(request):
             'NUM PER UNIT': item.num_per_unit,
             'WEIGHT': item.weight,
             'ORIGINAL PRICE': item.price,
+            'Remarks': remarks
         })
 
     # Create a Pandas DataFrame

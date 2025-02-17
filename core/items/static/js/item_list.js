@@ -32,6 +32,7 @@ $(document).ready(function() {
             { data: 'num_per_unit' },
             { data: 'weight' },
             { data: 'convert_kilo' },
+            { data: 'remarks' },
         ],
         layout: {
             // topStart: 'pageLength',
