@@ -25,7 +25,7 @@ class ItemForm(forms.ModelForm):
         fields = ['name', 'excerpt', 'weight', 'unit',
                   'num_per_unit', 'company', 'price']
         labels = {
-            "num_per_unit": "Packs/Unit"
+            "num_per_unit": "Packs/Case"
         }
 
     def clean(self):
