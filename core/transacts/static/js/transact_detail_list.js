@@ -27,6 +27,7 @@ $(document).ready(function() {
             { data: 'quantity' },
             { data: 'delivered_in_kilos' },
             { data: 'price_posted' },
+            { data: 'remarks' },
         ],
         layout: {
             // topStart: 'pageLength',
