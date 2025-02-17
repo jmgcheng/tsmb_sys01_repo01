@@ -602,8 +602,24 @@ def ajx_export_filtered_transact_detail_list(request):
     else:
         transacts = transacts.order_by(F(order_column).asc(nulls_last=True))
 
-    data = [
-        {
+    # Fetch price adjustment history for each item
+    item_ids = {t.item.id for t in transacts}
+    price_histories = {item_id: [] for item_id in item_ids}
+
+    adjustments = ItemPriceAdjustment.objects.filter(
+        item_id__in=item_ids).order_by('date')
+    for adj in adjustments:
+        price_histories[adj.item_id].append((adj.date, adj.new_price))
+
+    data = []
+    for t in transacts:
+        # Build remarks column
+        remarks = f"Original Price {t.item.price}."
+        if price_histories[t.item.id]:
+            for date, new_price in price_histories[t.item.id]:
+                remarks += f" Updated on {date.strftime('%b %d %Y')} to {new_price}."
+
+        data.append({
             'DATE': t.date.strftime('%Y-%m-%d'),
             'COMPANY': t.company_name,
             'SI NO': t.si_no,
@@ -617,9 +633,8 @@ def ajx_export_filtered_transact_detail_list(request):
             'QUANTITY': t.quantity,
             'DELIVERED IN KILOS': t.delivered_in_kilos,
             'PRICE POSTED': float(t.price_posted),
-        }
-        for t in transacts
-    ]
+            'REMARKS': remarks
+        })
 
     # Create a Pandas DataFrame
     df = pd.DataFrame(data)
